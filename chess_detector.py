@@ -4,6 +4,7 @@ import time
 import cv2
 import numpy as np
 import thread
+from copy import deepcopy
 
 # import detection module
 import sys
@@ -63,6 +64,7 @@ class ChessDetector:
 
     @staticmethod
     def show(img, detect_res, atonce=True):
+        cloned_img = deepcopy(img)
         for item in detect_res:
             xywh = item['coord']
             x, y, w, h = map(int, xywh)
@@ -76,8 +78,8 @@ class ChessDetector:
             corners.append((anchor_x+w, anchor_y))
             corners_np = np.array(corners)
             # cv2.circle(img, (x, y), 3, (0, 0, 255), -1)
-            cv2.polylines(img, [corners_np], True, (0, 255, 0), 3)
-            cv2.putText(img, str(item['label']), (x-10, y+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
+            cv2.polylines(cloned_img, [corners_np], True, (0, 255, 0), 3)
+            cv2.putText(cloned_img, str(item['label']), (x-10, y+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
 
             # corners = [[400, 885], [1200, 884], [1200, 200], [400, 200]]
             # corners_np = np.array(corners)
@@ -85,10 +87,10 @@ class ChessDetector:
 
         if atonce:
             #画图
-            cv2.imshow('data', img)
+            cv2.imshow('data', cloned_img)
             cv2.waitKey(5000)
         else:
-            return img
+            return cloned_img
 
     
 if __name__ == '__main__':

@@ -229,14 +229,9 @@ class ChessboardDetector:
 
 
     def main_loop(self):
-        # 互斥访问
-        if not self.semaphore.acquire():
-            print('thread locked')
-            return
-
         if self.wait_for_human and self.hand_detector.hand_exited and not self.bot_detector.detected:
 
-            # logger.info('wait_for_human: {}, hand_exited: {}, bot_detected: {}'.format(self.wait_for_human, self.hand_detector.hand_exited, self.bot_detector.detected))
+            logger.info('wait_for_human: {}, hand_exited: {}, bot_detected: {}'.format(self.wait_for_human, self.hand_detector.hand_exited, self.bot_detector.detected))
 
             # 检测当前棋面是否变化,加的约束为要么少一子，要么子不变
             detect_res = self.redetect(num=(self.chess_player.fen.ones.sum()-1, self.chess_player.fen.ones.sum()))
@@ -246,6 +241,15 @@ class ChessboardDetector:
 
             # 棋面有变化
             if map_diff.any():
+                # 互斥访问主循环
+                self.semaphore.acquire()
+                if self.in_main_loop:
+                    print('already in main loop')
+                    self.semaphore.release()
+                    return
+                self.in_main_loop = True
+                self.semaphore.release()
+
                 # 暂时不等待人
                 self.wait_for_human = False
 
@@ -336,12 +340,13 @@ class ChessboardDetector:
                 logger.info(self.chess_player.fen)
                 logger.info("Waiting for HUMAN player...")
 
+                # 退出主循环
+                self.semaphore.acquire()
+                self.in_main_loop = False
+                self.semaphore.release()
             else:
                 #　重置手检测
                 self.hand_detector.reset()
-
-        # 释放信号量
-        self.semaphore.release()
 
 
     def redetect(self, num=None):
