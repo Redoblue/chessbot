@@ -77,13 +77,9 @@ class ChessDetector:
             corners.append((anchor_x+w, anchor_y+h))
             corners.append((anchor_x+w, anchor_y))
             corners_np = np.array(corners)
-            # cv2.circle(img, (x, y), 3, (0, 0, 255), -1)
+            cv2.circle(cloned_img, (x, y), 4, (0, 0, 255), -1)
             cv2.polylines(cloned_img, [corners_np], True, (0, 255, 0), 3)
             cv2.putText(cloned_img, str(item['label']), (x-10, y+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 2)
-
-            # corners = [[400, 885], [1200, 884], [1200, 200], [400, 200]]
-            # corners_np = np.array(corners)
-            # cv2.polylines(img, [corners_np], True, (255, 0, 0), 2)
 
         if atonce:
             #画图

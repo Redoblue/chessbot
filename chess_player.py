@@ -182,7 +182,6 @@ class ChessPlayer:
         c1 = utils.round_int(pc1)
         r2 = utils.round_int(pr2)
         c2 = utils.round_int(pc2)
-        print(r1, c1, r2, c2)
         assert 0 <= r1 <= 9 and 0 <= c1 <= 8 and 0 <= r2 <= 9 and 0 <= c2 <= 8
         if not self.fen.map[r1, c1]:
             rospy.loginfo("[WARN]\tNo piece found")
@@ -191,7 +190,6 @@ class ChessPlayer:
         if self.fen.map[r2, c2]:
             self.remove(pr2, pc2)
 
-        print("grab pos:", pr1, pc1)
         # import ipdb; ipdb.set_trace()
         self.goto_rc(pr1, pc1)
         self.mover.grasp()

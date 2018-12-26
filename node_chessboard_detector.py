@@ -231,7 +231,7 @@ class ChessboardDetector:
     def main_loop(self):
         if self.wait_for_human and self.hand_detector.hand_exited and not self.bot_detector.detected:
 
-            logger.info('wait_for_human: {}, hand_exited: {}, bot_detected: {}'.format(self.wait_for_human, self.hand_detector.hand_exited, self.bot_detector.detected))
+            # logger.info('wait_for_human: {}, hand_exited: {}, bot_detected: {}'.format(self.wait_for_human, self.hand_detector.hand_exited, self.bot_detector.detected))
 
             # 检测当前棋面是否变化,加的约束为要么少一子，要么子不变
             detect_res = self.redetect(num=(self.chess_player.fen.ones.sum()-1, self.chess_player.fen.ones.sum()))
@@ -249,6 +249,7 @@ class ChessboardDetector:
                     return
                 self.in_main_loop = True
                 self.semaphore.release()
+                print('in main loop')
 
                 # 暂时不等待人
                 self.wait_for_human = False
@@ -265,11 +266,11 @@ class ChessboardDetector:
                     thread.start_new_thread(self.data_collector.collect, (self.img_color, detect_res, self.pv_transformer.transform_xy2rc))
 
                 # 检测认输机制
-                resign = False if (12 in tmp_fen.map[:3, 3:6]) else True
-                if resign:
-                    self.speaker.say('you_lose')
-                    time.sleep(3)
-                    kill()
+                # resign = False if (12 in tmp_fen.map[:3, 3:6]) else True
+                # if resign:
+                #     self.speaker.say('you_lose')
+                #     time.sleep(3)
+                #     kill()
 
                 # 更新self.chess_player.fen
                 self.chess_player.fen = tmp_fen
@@ -309,7 +310,8 @@ class ChessboardDetector:
                 # 我们在这里使用PreciseMove查询要下的位置的棋子的确切位置
                 # import ipdb; ipdb.set_trace()
                 pxyxy = self.get_precise_move(xyxy)
-                print('precise move', pxyxy)
+                logger.info('coarse: ' + ','.join(map(str, xyxy)))
+                logger.info('fine  : ' + ','.join(map(str, pxyxy)))
 
                 # 在机械臂走之前我们要停止手的检测，防止机械臂长程吃出问题
                 self.hand_detector.enabled = False
