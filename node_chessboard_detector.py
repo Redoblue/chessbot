@@ -276,6 +276,7 @@ class ChessboardDetector:
                 self.chess_player.fen = tmp_fen
                 # 语音-->思考中...
                 self.speaker.say('thinking')
+                time.sleep(1.5)
                 # 发送human move
                 self.ai_poster.send_fen(self.chess_player.fen.to_fen('ai'))
 
@@ -283,14 +284,16 @@ class ChessboardDetector:
                 try:
                     json = self.ai_poster.send_quest_move()
                     logger.info('json received: \n' + str(json))
+                    fen = json[u'fen']
                     result = json[u'result']
+                    move = json[u'move']
 
-                    if result == u'you_lose':
-                        self.speaker.say('you_lose')
+                    if result == u'you_win':
+                        self.speaker.say('you_win')
                         time.sleep(3)
                         kill()
-                    elif result == u'you_win':
-                        self.speaker.say('you_win')
+                    elif result == u'you_lose':
+                        self.speaker.say('you_lose')
                         time.sleep(3)
                         kill()
                     elif result == u'resign':
@@ -298,13 +301,12 @@ class ChessboardDetector:
                         time.sleep(3)
                         kill()
 
-                    fen = json[u'fen']
-                    print('[ROBOT PLAYER]: {}'.format(result))
+                    print('[ROBOT PLAYER]: {}'.format(move))
 
                 except simplejson.scanner.JSONDecodeError:
                     logger.info('system error!')
 
-                xyxy = ChessPlayer.parse_code(result)
+                xyxy = ChessPlayer.parse_code(move)
                 logger.info('received fen: ' + fen)
 
                 # 我们在这里使用PreciseMove查询要下的位置的棋子的确切位置
@@ -320,6 +322,11 @@ class ChessboardDetector:
                 self.speaker.say('my_turn')
                 rospy.sleep(1)
                 self.chess_player.move(*pxyxy)
+
+                # 将军的情况
+                if result == u'checking':
+                    self.speaker.say('check_mate')
+                    time.sleep(2)
 
                 # 等待机器人退出
                 while self.bot_detector.detected:
